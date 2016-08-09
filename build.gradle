@@ -1,0 +1,55 @@
+group 'com.qinjiangbo'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+defaultTasks 'clean','build'
+
+def uploadUrl
+def VERSION_NAME = '1.0-SNAPSHOT'
+def GROUP_ID = 'com.qinjiangbo'
+def ARTIFACT_ID = 'Mac'
+
+repositories {
+    mavenLocal()
+    //mavenCentral()
+    maven {
+        url "http://hadoop.qinjiangbo.com:8081/nexus/content/groups/public"
+    }
+}
+
+if(isReleaseBuild(VERSION_NAME)) {
+    println("RELEASE BUILD")
+    uploadUrl = 'http://hadoop.qinjiangbo.com:8081/nexus/content/repositories/releases'
+}
+else {
+    println('SNAPSHOT BUILD')
+    uploadUrl = 'http://hadoop.qinjiangbo.com:8081/nexus/content/repositories/snapshots'
+}
+
+def isReleaseBuild(VERSION) {
+    return !VERSION.contains('SNAPSHOT');
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        repository (url: uploadUrl) {
+            authentication(
+                    userName: "qinjiangbo",
+                    password: "qjbo1994"
+            )
+            pom.groupId = GROUP_ID
+            pom.artifactId = ARTIFACT_ID
+            pom.version = VERSION_NAME
+        }
+    }
+}
+
+dependencies {
+    compile('com.google.apis:google-api-services-storage:v1-rev72-1.22.0')
+    testCompile('junit:junit:4.11')
+}
